@@ -117,7 +117,7 @@ export class HalanaEmitterCdkStack extends Stack {
       loadBalancerName: `HalanaEmitterLB${this.env}`,
     });
 
-    const listener = this.loadBalancer.addListener(`HalanaEmitterLBListener${this.env}`, {
+    const listener: elbv2.ApplicationListener = this.loadBalancer.addListener(`HalanaEmitterLBListener${this.env}`, {
       port: 8443,
       protocol: elbv2.ApplicationProtocol.HTTPS,
       certificates: [this.certificate],
@@ -139,7 +139,21 @@ export class HalanaEmitterCdkStack extends Stack {
       targetGroups: [albTarget],
     });
 
-    const repository = ecr.Repository.fromRepositoryName(this, 'HalanaEmitterEcr', this.props.ecrRepositoryName);
+    const repository: ecr.IRepository = ecr.Repository.fromRepositoryName(
+      this,
+      'HalanaEmitterEcr',
+      this.props.ecrRepositoryName,
+    );
+
+    const taskImageOptions: ecsPattern.ApplicationLoadBalancedTaskImageOptions = {
+      image: ecs.ContainerImage.fromEcrRepository(repository),
+      enableLogging: true,
+      containerPort: 8080,
+      containerName: 'emitter',
+    };
+    if (emitterLicense) {
+      Object.assign(taskImageOptions, { environment: { EMITTER_LICENSE: emitterLicense } });
+    }
     new ecsPattern.ApplicationLoadBalancedFargateService(this, `HalanaEmitterLoadbalancerStack${this.env}`, {
       loadBalancerName: `${this.stackName}-emitter-loadbalancer`,
       serviceName: `${this.stackName}-emitter-service-loadbalancer`,
@@ -161,15 +175,7 @@ export class HalanaEmitterCdkStack extends Stack {
       memoryLimitMiB: 1024,
       minHealthyPercent: 100,
       securityGroups: [this.serviceSG],
-      taskImageOptions: {
-        image: ecs.ContainerImage.fromEcrRepository(repository),
-        enableLogging: true,
-        containerPort: 8080,
-        containerName: 'emitter',
-        environment: {
-          EMITTER_LICENSE: emitterLicense,
-        },
-      },
+      taskImageOptions,
     });
   }
   public init() {
