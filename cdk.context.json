@@ -1,0 +1,15 @@
+{
+  "hosted-zone:account=899593456402:domainName=ltv.land:region=ap-southeast-1": {
+    "Id": "/hostedzone/Z00860343JEST969C83WB",
+    "Name": "ltv.land."
+  },
+  "availability-zones:account=899593456402:region=ap-southeast-1": [
+    "ap-southeast-1a",
+    "ap-southeast-1b",
+    "ap-southeast-1c"
+  ],
+  "hosted-zone:account=899593456402:domainName=hichat.io:region=ap-southeast-1": {
+    "Id": "/hostedzone/Z008078433TW65XJ8VE0J",
+    "Name": "hichat.io."
+  }
+}
